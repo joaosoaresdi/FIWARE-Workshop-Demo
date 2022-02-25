@@ -1,0 +1,144 @@
+version: '3.5'
+services:
+  orion_1:
+    image: fiware/orion:latest
+    hostname: orion_1
+    container_name: fiware-orion_1
+    depends_on:
+      - mongo-db_1
+    networks:
+      - fiware_workshop_1
+    expose:
+      - "1026"
+    ports:
+      - "1027:1026" # localhost:1026
+    command: -dbhost mongo-db_1 -logLevel DEBUG
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Database      
+  mongo-db_1:
+    image: mongo:latest
+    hostname: mongo-db_1
+    container_name: db-mongo_1
+    expose:
+      - "27017"
+    ports:
+      - "27017:27017" # localhost:27017
+    networks:
+      - fiware_workshop_1
+    volumes:
+      - mongo-db:/data
+        
+  orion_2:
+    image: fiware/orion:latest
+    hostname: orion_2
+    container_name: fiware-orion_2
+    depends_on:
+      - mongo-db_2
+    networks:
+      - fiware_workshop_2
+    expose:
+      - "1026"
+    ports:
+      - "1028:1026" # localhost:1027
+    command: -dbhost mongo-db_2 -logLevel DEBUG
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Database      
+  mongo-db_2:
+    image: mongo:latest
+    hostname: mongo-db_2
+    container_name: db-mongo_2
+    expose:
+      - "27017"
+    ports:
+      - "27018:27017" # localhost:27018
+    networks:
+      - fiware_workshop_2
+    volumes:
+      - mongo-db:/data
+        
+  orion_3:
+    image: fiware/orion:latest
+    hostname: orion_3
+    container_name: fiware-orion_3
+    depends_on:
+      - mongo-db_3
+    networks:
+      - fiware_workshop_3
+    expose:
+      - "1026"
+    ports:
+      - "1029:1026" # localhost:1028
+    command: -dbhost mongo-db_3 -logLevel DEBUG
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Database      
+  mongo-db_3:
+    image: mongo:latest
+    hostname: mongo-db_3
+    container_name: db-mongo_3
+    expose:
+      - "27017"
+    ports:
+      - "27019:27017" # localhost:27019
+    networks:
+      - fiware_workshop_3
+    volumes:
+      - mongo-db:/data
+        
+
+  orion_4:
+    image: fiware/orion:latest
+    hostname: orion_4
+    container_name: fiware-orion_4
+    depends_on:
+      - mongo-db_4
+    networks:
+      - fiware_workshop_4
+    expose:
+      - "1026"
+    ports:
+      - "1030:1026" # localhost:1028
+    command: -dbhost mongo-db_4 -logLevel DEBUG
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Database      
+  mongo-db_4:
+    image: mongo:latest
+    hostname: mongo-db_4
+    container_name: db-mongo_4
+    expose:
+      - "27017"
+    ports:
+      - "27020:27017" # localhost:27020
+    networks:
+      - fiware_workshop_4
+    volumes:
+      - mongo-db:/data
+        
+
+networks:
+  fiware_workshop_1:
+    ipam:
+      config:
+        - subnet: 172.16.1.0/24
+  fiware_workshop_2:
+    ipam:
+      config:
+        - subnet: 172.16.2.0/24
+  fiware_workshop_3:
+    ipam:
+      config:
+        - subnet: 172.16.3.0/24
+  fiware_workshop_4:
+    ipam:
+      config:
+        - subnet: 172.16.4.0/24
+
+volumes:
+  mongo-db: ~

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Air Quality Demo</title>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <style>
+    /* Set the size of the div element that contains the map */
+	.map {
+	  height: 600px;
+	  /* The height is 400 pixels */
+	  width: 100%;
+	  /* The width is the width of the web page */
+	}
+	</style>
+	
+  </head>
+  <body>
+  <div class="container">
+  <br/>
+	<div class="row" style="padding-left:5%">
+		<div class="col">
+		    <h1>Air Quality Demo</h1>
+		</div>
+	</div>
+	<br/>
+    <div class="row">
+    <!--The div element for the map -->
+    	<div class="col">
+		    <div id="map" class="map"></div><br\>
+    	</div>
+	</div>
+	<br/>
+	<br/>
+	<div class="row">
+    	<div class="col">
+		    <div id="result"></div>
+		</div>
+	</div>
+  </div>
+
+    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDXRWwvpVsA23lFAgSDBNHJ3w8SPJVjBBM&callback=initMap&libraries=&v=weekly"async></script>
+    
+    <script>
+const fcup = {lat: 41.1520262, lng: -8.6361417};
+let marker;
+let map;
+    // Initialize and add the map
+function initMap() {
+  const m = new google.maps.Map(document.getElementById("map"), {
+    zoom: 15,
+    center: fcup,
+  });
+  
+  map = m;
+  
+  google.maps.event.addListenerOnce(map, 'idle', done);
+
+}
+
+let airquality_markers = new Map();
+let infowindow = null;					 					
+let hostname = location.hostname;
+
+function done() {
+	if(typeof(EventSource) !== "undefined") {
+		const source = new EventSource(`http://${hostname}:3000/airquality/events`);
+
+		source.onmessage = function(e) {
+			let array = JSON.parse(e.data);
+			for (let i = 0; i < array.length; i++) {
+				const sensor_id = array[i].id;
+				const temperature = array[i].temperature;
+				const pressure = array[i].pressure;
+				const humidity = array[i].humidity;
+				const co2 = array[i].co2;
+				var location = array[i].location;
+				var idx = location.indexOf(",");
+				var lat = parseFloat(location.substring(0, idx));
+				var lng = parseFloat(location.substring(idx+1, location.length));
+
+				if(airquality_markers.has(sensor_id)) {
+					//remove old marker
+					console.log("update: " + sensor_id);
+					airquality_markers.get(sensor_id).setMap(null);
+				}
+				if (sensor_id !== undefined) {
+				  var iconBase = `http://${hostname}:3000/`;
+				  const icons = [
+						{ // green: 
+							icon: iconBase + "airquality.png",
+						},
+				  	];
+
+					// create and store marker					
+		  			const content = `<div class="container"><div class="row"><h1 id="firstHeading" class="firstHeading">${sensor_id}</h1></div><br /><div class="row"><br /><p>Temperature : ${temperature}°C</p></div><div class="row"><p>Pressure : ${pressure}hPa</p></div><div class="row"><p>Humidity : ${humidity}%</p></div><div class="row"><p>CO2 : ${co2}ppm </p></div></div>`;
+		  
+					console.log(icons[0].icon);
+
+	  				const mark = new google.maps.Marker({
+					    position: {lat: lat, lng: lng},
+					    title: sensor_id,
+						icon: icons[0].icon,
+						map,
+					});
+					
+					mark.addListener("click", () => {
+					    if (infowindow) {
+     						infowindow.close();
+					    }
+					    infowindow = new google.maps.InfoWindow({
+					    	content,
+						});  
+	    				infowindow.open({
+						    anchor: mark,
+						    shouldFocus: true,
+						    map,
+				    	});
+					}, {passive: true});
+					
+		  			mark.setAnimation(google.maps.Animation.DROP);
+					airquality_markers.set(sensor_id, mark);
+				}
+			}		
+		};
+
+		source.onerror = function(e) {
+			console.log(e);
+			source.close();
+		};
+
+	} else {
+			document.getElementById("result").innerHTML = "Sorry, your browser does not support server-sent events...";
+	}
+}
+
+
+   </script>
+  </body>
+</html>
+
+
+
