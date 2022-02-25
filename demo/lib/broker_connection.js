@@ -110,7 +110,7 @@ async function subscribeBroker(data, service, broker_port) {
  * 	returns true or throws error
  */
 function updateContext(sensor_id, data, service, broker_port) {
-	var headers = create_update_headers(sensor_id, data, service, broker_port);
+	var headers = create_context_update_options(sensor_id, data, service, broker_port);
 	
 	console.log('---------------------- Update Context ----------------------');
 	console.log(headers);
